@@ -25,3 +25,6 @@ for arr1 in test:
     print(arr1)
 #print(weights_arr)
 
+
+
+
