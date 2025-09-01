@@ -96,6 +96,10 @@ class Camera:
 
             #print(y_pos, y_coord)
             self.board.terrain_sprites[i].update(x=x_coord, y=y_coord)
+            self.board.terrain_arrows[i].update(x=x_coord+32, y=y_coord+32)
+            self.board.terrain_highlights[i].x = x_coord
+            self.board.terrain_highlights[i].y = y_coord
+            #self.board.terrain_highlights[i].update(x=x_coord, y=y_coord)
         for board_unit_pos in self.board.board_units:
             x_pos = board_unit_pos % self.board.board_width
             y_pos = board_unit_pos // self.board.board_height

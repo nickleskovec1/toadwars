@@ -56,11 +56,29 @@ for i in range(len([e.value for e in ELayer])):
 weights_arr = []
 terrains = []
 terrain_sprites = []
+terrain_box_highlights = []
+terrain_arrows = []
 img = pyglet.image.load('images/Ground_1.png')
+arrow = pyglet.image.load('images/arrow.png')
+arrow.anchor_x = arrow.width // 2
+arrow.anchor_y = arrow.height // 2
 for i in range(GRID_X_NUM_TILES * GRID_Y_NUM_TILES):
     terrains.append(ETerrainType.FLATLAND)
     terrain_sprites.append( pyglet.sprite.Sprite(img,
                                    batch=batch, group=layers[ELayer.TERRAIN_LAYER.value], x=0, y=0))
+    terrain_arrows.append(pyglet.sprite.Sprite(arrow, batch=batch, group=layers[ELayer.TERRAIN_OBJECT2.value]))
+    terrain_arrows[i].visible = False
+    # rect = pyglet.shapes.Rectangle(0, 0, GRID_X_PIXELS, GRID_Y_PIXELS,
+    #                             (255, 255, 255, 20), group=layers[ELayer.TERRAIN_LAYER.value], batch=batch)
+    # rect.opacity = 100
+    # terrain_box_highlights.append(rect)
+
+    rect = pyglet.shapes.Rectangle(0, 0, GRID_X_PIXELS, GRID_Y_PIXELS,
+                                (255, 255, 255), group=layers[ELayer.TERRAIN_OBJECT.value], batch=batch)
+    rect.opacity = 70
+    rect.visible = False
+    terrain_box_highlights.append(rect)
+
 x = GRID_X_NUM_TILES
 y = GRID_Y_NUM_TILES
 for enum in [e.value for e in EUnitType.UnitType]:
@@ -74,7 +92,8 @@ for enum in [e.value for e in EUnitType.UnitType]:
 
 #tank_sprite = pyglet.sprite.Sprite(pyglet.image.load('images/T-34/ww2_top_view_hull4.png'),
 #                                   batch=batch, group=layers[ELayer.SPRITE_LAYER.value])
-board = Board.Board(weights_arr, terrains, terrain_sprites, GRID_X_NUM_TILES, GRID_Y_NUM_TILES)
+board = Board.Board(weights_arr, terrains, terrain_sprites, terrain_box_highlights,
+                    terrain_arrows, GRID_X_NUM_TILES, GRID_Y_NUM_TILES)
 
 for i in range(10):
     tank_sprite = pyglet.sprite.Sprite(pyglet.image.load('images/T-34/ww2_top_view_hull4.png'),
@@ -102,7 +121,14 @@ def on_mouse_press(x, y, button, modifiers):
     array_idx = y_pos * GRID_X_NUM_TILES + x_pos
     if array_idx in board.board_units:
         camera.selected = True
+        for i in range(len(board.terrain_highlights)):
+            board.terrain_highlights[i].visible = False
+        for sprite in board.terrain_arrows:
+            sprite.visible = False
         board.board_units[array_idx].check_move(board)
+        for tup in board.board_units[array_idx].possible_moves:
+            terrain_idx = tup[0] + tup[1] * GRID_X_NUM_TILES
+            board.terrain_highlights[terrain_idx].visible = True
         print("CHECKING MOVEMENT")
         camera.select_square.visible = True
         camera.selected_idx = array_idx
@@ -120,6 +146,9 @@ def on_mouse_press(x, y, button, modifiers):
                 board.board_units.pop(camera.selected_idx)
                 camera.select_square.visible = False
                 camera.selected = False
+                for i in range(len(board.terrain_highlights)):
+                    board.terrain_highlights[i].visible = False
+                    board.terrain_arrows[i].visible = False
     #print(x, y, x_pos, y_pos, camera.y_pos)
 
 @window.event
@@ -156,6 +185,31 @@ def on_mouse_motion(x, y, dx, dy):
         camera.movement_direction = ECameraMovementTypes.NEG_Y
     else:
         camera.set_movement(ECameraMovementTypes.NONE, 0, 0)
+    x_pos = (int)(camera.x_pos + x / GRID_X_PIXELS)
+    y_pos = (int)((camera.y - y) // 64) + 1
+    if camera.selected == True and (x_pos, y_pos) in board.board_units[camera.selected_idx].possible_moves:
+        path = board.board_units[camera.selected_idx].possible_moves[(x_pos, y_pos)]
+        for sprite in board.terrain_arrows:
+            sprite.visible = False
+        for route in path:
+            arr = path[route]
+            for i in range(1, len(arr)-1):
+                terrain_arrows_idx = arr[i][1] * GRID_X_NUM_TILES + arr[i][0]
+                if arr[i][1] > arr[i-1][1]:
+                    board.terrain_arrows[terrain_arrows_idx].rotation = 180
+                elif arr[i][1] < arr[i-1][1]:
+                    board.terrain_arrows[terrain_arrows_idx].rotation = 0
+                elif arr[i][0] > arr[i-1][0]:
+                    board.terrain_arrows[terrain_arrows_idx].rotation = 90
+                elif arr[i][0] < arr[i-1][0]:
+                    board.terrain_arrows[terrain_arrows_idx].rotation = 270
+
+
+                board.terrain_arrows[arr[i][1] * GRID_X_NUM_TILES + arr[i][0]].visible = True
+        #board.terrain_arrows[y_pos * GRID_X_NUM_TILES + x_pos].visible = True
+        # for sprite in board.terrain_arrows:
+        #     sprite.visible = True
+
 
 camera.draw()
 camera.y = GRID_Y_PIXELS * (GRID_Y_NUM_TILES - 1)
