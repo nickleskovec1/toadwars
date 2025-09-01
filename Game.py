@@ -16,8 +16,8 @@ from Units import Vehicle
 GRID_X_PIXELS = 64  # num of horizontal pixels per tile
 GRID_Y_PIXELS = 64  # num of vertical pixels per tile
 
-window = pyglet.window.Window(fullscreen=False)
-window.set_size(1300, 670)
+window = pyglet.window.Window(fullscreen=True)
+#window.set_size(1300, 670)
 SCREEN_WIDTH = window.width
 SCREEN_HEIGHT = window.height
 GRID_X_NUM_TILES = 30
@@ -58,24 +58,48 @@ terrains = []
 terrain_sprites = []
 terrain_box_highlights = []
 terrain_arrows = []
-img = pyglet.image.load('images/Ground_1.png')
+terrain_1 = pyglet.image.load('images/Grass_2.png')
+terrain_2 = pyglet.image.load('images/Ground_1.png')
+terrain_3 = pyglet.image.load('images/Ground_2.png')
+terrain_4 = pyglet.image.load('images/mountain.png')
 arrow = pyglet.image.load('images/arrow.png')
 arrow.anchor_x = arrow.width // 2
 arrow.anchor_y = arrow.height // 2
+all_weights = []
 for i in range(GRID_X_NUM_TILES * GRID_Y_NUM_TILES):
-    terrains.append(ETerrainType.FLATLAND)
-    terrain_sprites.append( pyglet.sprite.Sprite(img,
-                                   batch=batch, group=layers[ELayer.TERRAIN_LAYER.value], x=0, y=0))
+    random_int = random.randint(1, 4)
+    all_weights.append(random_int)
+    img = terrain_1
+    if random_int == 1:
+        terrains.append(ETerrainType.FLATLAND)
+        img = terrain_1
+    elif random_int == 2:
+        terrains.append(ETerrainType.FLATLAND)
+        img = terrain_2
+    elif random_int == 3:
+        terrains.append(ETerrainType.RIVER)
+        img = terrain_3
+    elif random_int == 4:
+        terrains.append(ETerrainType.MOUNTAIN)
+        img = terrain_4
+
+    if random_int == 4:
+        terrain_sprites.append( pyglet.sprite.Sprite(img,
+                                       batch=batch, group=layers[ELayer.TERRAIN_LAYER2.value], x=0, y=0))
+    else:
+        terrain_sprites.append(pyglet.sprite.Sprite(img,
+                                                    batch=batch, group=layers[ELayer.TERRAIN_LAYER.value], x=0, y=0))
     terrain_arrows.append(pyglet.sprite.Sprite(arrow, batch=batch, group=layers[ELayer.TERRAIN_OBJECT2.value]))
     terrain_arrows[i].visible = False
+
     # rect = pyglet.shapes.Rectangle(0, 0, GRID_X_PIXELS, GRID_Y_PIXELS,
     #                             (255, 255, 255, 20), group=layers[ELayer.TERRAIN_LAYER.value], batch=batch)
     # rect.opacity = 100
     # terrain_box_highlights.append(rect)
 
     rect = pyglet.shapes.Rectangle(0, 0, GRID_X_PIXELS, GRID_Y_PIXELS,
-                                (255, 255, 255), group=layers[ELayer.TERRAIN_OBJECT.value], batch=batch)
-    rect.opacity = 70
+                                (200, 200, 200), group=layers[ELayer.TERRAIN_OBJECT.value], batch=batch)
+    rect.opacity = 125
     rect.visible = False
     terrain_box_highlights.append(rect)
 
@@ -86,7 +110,7 @@ for enum in [e.value for e in EUnitType.UnitType]:
     for i in range(y):
         arr = []
         for j in range(x):
-            arr.append(random.randint(1, 1))
+            arr.append(all_weights[i*y + j])
         weights.append(arr)
     weights_arr.append(weights)
 
@@ -100,7 +124,7 @@ for i in range(10):
                                        batch=batch, group=layers[ELayer.SPRITE_LAYER.value], x=0, y=0)
     y = (800 + i) // GRID_X_NUM_TILES
     x = (800 + i) % GRID_X_NUM_TILES
-    vehicle = Vehicle.Vehicle(x, y, 5, 1, 3, 3, 3, EUnitType.UnitType.INFANTRY, tank_sprite)
+    vehicle = Vehicle.Vehicle(x, y, 5, 1, 3, 3, 12, EUnitType.UnitType.INFANTRY, tank_sprite)
     board.board_units[800+i] = vehicle
 
 print(len(layers))
@@ -193,7 +217,7 @@ def on_mouse_motion(x, y, dx, dy):
             sprite.visible = False
         for route in path:
             arr = path[route]
-            for i in range(1, len(arr)-1):
+            for i in range(1, len(arr)):
                 terrain_arrows_idx = arr[i][1] * GRID_X_NUM_TILES + arr[i][0]
                 if arr[i][1] > arr[i-1][1]:
                     board.terrain_arrows[terrain_arrows_idx].rotation = 180
