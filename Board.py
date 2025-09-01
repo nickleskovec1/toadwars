@@ -1,3 +1,5 @@
+import pyglet
+
 from Enums import ETerrainType
 
 class Board:
@@ -5,6 +7,13 @@ class Board:
     """
     weights: [EUnitType][y][x]] -> weights for moving to space for each unit type
     """
-    def __init__(self, weights, terrain : ETerrainType):
+    def __init__(self, weights, terrains: ETerrainType,
+                 terrain_sprites: [pyglet.sprite.Sprite],
+                 board_width, board_height):
         self.weights = weights
-        self.terrain = terrain
+        self.terrains = terrains
+        self.board_width = board_width
+        self.board_height = board_height
+        self.terrain_sprites = terrain_sprites
+        self.board_units = {}
+

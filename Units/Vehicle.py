@@ -1,9 +1,15 @@
+import pyglet
+
 from Board import Board
 from Enums.EUnitType import UnitType
+from Units.Unit import Unit
 
-class Vehicle:
 
-    def __init__(self, x, y, health, damage, range_min, range_max, movement, unit_type : UnitType):
+class Vehicle (Unit):
+
+    def __init__(self, x, y, health, damage, range_min, range_max, movement, unit_type: UnitType,
+                 a_sprite: pyglet.sprite.Sprite):
+        super().__init__(x, y, health, damage, range_min, range_max, movement, unit_type, a_sprite)
         self.x = x
         self.y = y
         self.health = health
@@ -12,12 +18,14 @@ class Vehicle:
         self.range_max = range_max
         self.movement = movement
         self.unit_type = unit_type
+        self.m_sprite = a_sprite
+        self.possible_moves = None
 
 
     def gayAssRecursion(self, paths : dict, range, weights, current_path):
         if range > 0:
-            y_pos = current_path[len(current_path)-1][0]
-            x_pos = current_path[len(current_path)-1][1]
+            y_pos = current_path[len(current_path)-1][1]
+            x_pos = current_path[len(current_path)-1][0]
             nodes = []
             # check left node
             if x_pos > 0:
@@ -63,9 +71,10 @@ class Vehicle:
         print(weights)
         paths = {}
         self.gayAssRecursion(paths, self.movement, weights, [(self.x, self.y)])
+        self.possible_moves = paths
         print(paths)
 
 
     def move(self, x, y):
-        print(x)
-        #deltaX
+        self.x = x
+        self.y = y
