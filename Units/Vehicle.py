@@ -16,6 +16,7 @@ class Vehicle (Unit):
         self.damage = damage
         self.range_min = range_min
         self.range_max = range_max
+        self.movement_remaining = movement
         self.movement = movement
         self.unit_type = unit_type
         self.m_sprite = a_sprite
